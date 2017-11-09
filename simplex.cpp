@@ -21,8 +21,14 @@ typedef vector<int> Basis;
 
 class SimplexTableau {
 public:
-    SimplexTableau(bool _isVerbose, bool _isSteep):
-    opt(0), nbPivots(0), isVerbose(_isVerbose), isSteep(_isSteep) {}
+    enum class PivotType {
+        Steepest,
+        Bland,
+        MaxCoeff
+    };
+
+    SimplexTableau(bool _isVerbose, PivotType _pivot):
+    opt(0), nbPivots(0), isVerbose(_isVerbose), pivot(_pivot) {}
 
     void read_from_file(string name) {
         stringstream in;
@@ -130,6 +136,14 @@ public:
         return index;
     }
 
+    RowVectorXr::Index pivot_entering_Bland() const {
+        for (int coeff = 0; coeff < c.cols(); ++coeff) {
+            if (c(coeff) > 0)
+                return coeff;
+        }
+        throw exception();
+    }
+
     RowVectorXr::Index pivot_entering_SteepestEdgeRule() const {
         RowVectorXr norms = (c>0).select(A.matrix().colwise().squaredNorm(), 0);
         RowVectorXr steep = (norms!=0).select(c/norms, 0);
@@ -171,7 +185,18 @@ public:
     ProblemState simplex_iteration() {
         if (!(c > 0).any())
             return ProblemState::OptimumFound;
-        RowVectorXr::Index i_entering = isSteep? pivot_entering_SteepestEdgeRule() : pivot_entering_DantzigRule();
+        RowVectorXr::Index i_entering;
+        switch (pivot) {
+            case PivotType::Bland:
+            i_entering = pivot_entering_Bland();
+            break;
+            case PivotType::Steepest:
+            i_entering = pivot_entering_SteepestEdgeRule();
+            break;
+            default:
+            i_entering = pivot_entering_DantzigRule();
+            break;
+        }
         cout << "Entering x_" << (i_entering+1) << endl;
         VectorXr::Index i_leaving = pivot_leaving_Bland(A.col(i_entering));
         if (i_leaving == -1)
@@ -251,10 +276,17 @@ public:
         }
         cout << "The number of pivots is: " << nbPivots << "\n";
         cout << "Pivot rule used: ";
-        if (isSteep)
-            cout << "Steepest Edge" << endl;
-        else
-            cout << "Dantzig's rule" << endl;
+        switch (pivot) {
+            case PivotType::Bland:
+            cout << "Bland's rule\n";
+            break;
+            case PivotType::Steepest:
+            cout << "Steepest Edge rule\n";
+            break;
+            default:
+            cout << "Dantzig's rule\n";
+            break;
+        }
     }
 
     int n;
@@ -269,7 +301,7 @@ public:
     vector<int> affectation;
     unsigned int nbPivots;
     bool isVerbose;
-    bool isSteep;
+    PivotType pivot;
 };
 
 int main(int argc, char* argv[]) {
@@ -279,7 +311,17 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     string name(argv[3]);
-    SimplexTableau tableau(string(argv[1]) == "-verbose", string(argv[2]) == "-steepest");
+    string pivotName = string(argv[2]);
+    SimplexTableau::PivotType pivot;
+    if (pivotName == "-steepest")
+        pivot = SimplexTableau::PivotType::Steepest;
+    else if (pivotName == "-bland")
+        pivot = SimplexTableau::PivotType::Bland;
+    else if (pivotName == "-maxcoeff")
+        pivot = SimplexTableau::PivotType::MaxCoeff;
+    else
+        throw exception();
+    SimplexTableau tableau(string(argv[1]) == "-verbose", pivot);
     tableau.read_from_file(name);
     if (tableau.artificials == 0) {
         cout << "The problem is trivially feasible : no need for phase 1\n";

@@ -1,8 +1,5 @@
 all:
-	g++ -std=c++14 -O2 -s -pedantic-errors -Wall -fopenmp simplex.cpp -o lpsolve -lgmp
+	g++ -std=c++14 -O2 -s -pedantic-errors -Wall -fopenmp simplex.cpp -o lpsolve -lgmp -lboost_program_options
 
 tests:
-	g++ -std=c++14 -O2 -s -pedantic-errors -Wall generate_tests.cpp -o gentest -lgmp
-
-assembly:
-	g++ -std=c++14 -O2 -s -pedantic-errors -Wall -S simplex.cpp -o asm_simplex
+	g++ -std=c++14 -O2 -s -pedantic-errors -Wall -fopenmp generate_tests.cpp -o gentest -lgmp -lboost_program_options

@@ -1,0 +1,6 @@
+## For my TD-mans
+
+Read README.md, it's a markdown file with all there is to know in.
+
+Please, if the executable does not work or the sources doesn't compile, contact me to solve this problem.
+Eventually I can install libraries, or give a demonstration on my computer.

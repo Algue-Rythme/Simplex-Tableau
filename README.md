@@ -1,6 +1,6 @@
 # Simplex-Tableau
 
-This is a Markdown File.
+Implementation of Simplex Tableau algorithm, for the Approximation and Optimisation course at ENS Lyon 2017-2018.
 
 ## Usage
 
@@ -14,8 +14,6 @@ The usage of .bethune-exec is the following :
 will use steepest edge rule (modified by cycle elimination) and print everything (verbose 3).
 Defaults values are also provided for options, such as maxCoeff or verbose=0.
 
-Please, if the executable doesn't work or the sources doesn't compile, contact me to solve this problem.
-Eventually I can install libraries, or give a demonstration on my computer.
 The executable was compiled for Ubuntu 16 on x86-64 bits system, with g++ 5.4.0
 
 ## Language and librairies

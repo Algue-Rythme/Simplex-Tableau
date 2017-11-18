@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <exception>
+#include <chrono>
+#include <tuple>
 
 #include <boost/multiprecision/gmp.hpp>
 #include <boost/program_options.hpp>
@@ -40,20 +42,31 @@ public:
         OptimumFound
     };
 
-    SimplexTableau(int, PivotType);
+    SimplexTableau(int, PivotType, bool);
 
     void read_from_file(const string&);
     void print_problem() const;
     void print_tableau() const;
+    void print_solution() const;
+    void print_params() const;
+
+    void solve();
+
+private:
 
     RowVectorXr::Index pivot_entering_DantzigRule() const;
     RowVectorXr::Index pivot_entering_Bland() const;
     RowVectorXr::Index pivot_entering_SteepestEdgeRule() const;
     VectorXr::Index pivot_leaving_Bland(const VectorXr& A_col) const;
 
-    void do_pivot(RowVectorXr::Index i_entering, VectorXr::Index i_leaving);
+    void do_pivot(RowVectorXr::Index, VectorXr::Index);
+    void updateBasis(RowVectorXr::Index, VectorXr::Index);
+    void clear_cycling_detection();
+    void from_phase1_to_phase2();
     ProblemState simplex_iteration();
     void simplex_method(Phase phase);
+
+    typedef tuple<RowVectorXr::Index,RowVectorXr::Index> PivotOperation;
 
     int n;
     int m;
@@ -68,10 +81,15 @@ public:
     unsigned int nbPivots;
     int verbose;
     PivotType pivot;
+    PivotType oldPivot;
+    Rational deltaOpt;
+    bool detectCycles;
+    vector<PivotOperation> history;
 };
 
-SimplexTableau::SimplexTableau(int _verboseLevel, PivotType _pivot):
-opt(0), nbPivots(0), verbose(_verboseLevel), pivot(_pivot) {}
+SimplexTableau::SimplexTableau(int _verboseLevel, PivotType _pivot, bool _detectCycles):
+opt(0), nbPivots(0), verbose(_verboseLevel),
+pivot(_pivot), oldPivot(_pivot), detectCycles(_detectCycles) {}
 
 void SimplexTableau::read_from_file(const string& name) {
     stringstream in;
@@ -120,7 +138,7 @@ void SimplexTableau::read_from_file(const string& name) {
 }
 
 void SimplexTableau::print_problem() const {
-    if (verbose < 1)
+    if (verbose < 2)
         return ;
     cout << "OUTPUT\n";
     cout << "The input linear program is:\n\n";
@@ -162,7 +180,7 @@ void SimplexTableau::print_problem() const {
 }
 
 void SimplexTableau::print_tableau() const {
-    if (verbose < 2)
+    if (verbose < 3)
         return ;
     ArrayXr t;
     t.resize(A.rows() + 1, A.cols() + 1);
@@ -171,6 +189,43 @@ void SimplexTableau::print_tableau() const {
     t.bottomRightCorner(A.rows(), 1) = b;
     t.bottomLeftCorner(A.rows(), A.cols()) = A;
     cout << t << endl;
+}
+
+void SimplexTableau::print_solution() const {
+    if (verbose >= 1) {
+        cout << "One optimal solution is: ";
+        for (int variable = 0; variable < n; ++variable) {
+            if (variable != 0)
+                cout << ", ";
+            cout << "x_" << (variable+1) << " = ";
+            if (affectation[variable] != -1)
+                cout << b(affectation[variable]);
+            else
+                cout << "0";
+        }
+    }
+    cout << "\nThe value of the objective for this solution is: " << -opt << "\n";
+}
+
+void SimplexTableau::print_params() const {
+    cout << "The number of pivots is: " << nbPivots << "\n";
+    cout << "Pivot rule used: ";
+    switch (oldPivot) {
+        case PivotType::Bland:
+        cout << "Bland's rule ";
+        break;
+        case PivotType::Steepest:
+        cout << "Steepest Edge rule ";
+        break;
+        default:
+        cout << "Dantzig's rule ";
+        break;
+    }
+    if (detectCycles) {
+        cout << "with no-cycles option\n";
+    } else {
+        cout << "\n";
+    }
 }
 
 RowVectorXr::Index SimplexTableau::pivot_entering_DantzigRule() const {
@@ -215,7 +270,48 @@ void SimplexTableau::do_pivot(RowVectorXr::Index i_entering, VectorXr::Index i_l
     b += (coeffPivot * b(i_leaving)).eval();
     Rational coeffCost = -c(i_entering);
     c += coeffCost * A.row(i_leaving);
+    Rational prev = opt;
     opt += coeffCost * b(i_leaving);
+    deltaOpt = opt - prev;
+}
+
+void SimplexTableau::clear_cycling_detection() {
+    history.clear();
+    pivot = oldPivot;
+}
+
+void SimplexTableau::updateBasis(RowVectorXr::Index i_entering, VectorXr::Index i_leaving) {
+    if (i_entering < n)
+        affectation[i_entering] = i_leaving;
+    if (basis[i_leaving] < n)
+        affectation[basis[i_leaving]] = -1;
+    basis[i_leaving] = i_entering;
+    if (!detectCycles)
+        return ;
+    if (deltaOpt > 0) {
+        clear_cycling_detection();
+    } else {
+        if (pivot == PivotType::Bland)
+            return ;
+        history.emplace_back(i_entering, i_leaving);
+        if (history.size() < 2)
+            return ;
+        for (int s = 1; s*2 <= (int)history.size(); ++s) {
+            bool cycle = true;
+            for (int i = 0; i < s; ++i) {
+                if (history[history.size()-i-1] != history[history.size()-s-i-1]) {
+                    cycle = false;
+                    break ;
+                }
+            }
+            if (cycle) {
+                cout << "CYCLE DETECTED !\n";
+                oldPivot = pivot;
+                pivot = PivotType::Bland;
+                return ;
+            }
+        }
+    }
 }
 
 SimplexTableau::ProblemState SimplexTableau::simplex_iteration() {
@@ -239,13 +335,30 @@ SimplexTableau::ProblemState SimplexTableau::simplex_iteration() {
         return ProblemState::Unbounded;
     cout << "Leaving x_" << (basis[i_leaving]+1) << endl;
     do_pivot(i_entering, i_leaving);
-    if (i_entering < n)
-        affectation[i_entering] = i_leaving;
-    if (basis[i_leaving] < n)
-        affectation[basis[i_leaving]] = -1;
-    basis[i_leaving] = i_entering;
+    updateBasis(i_entering, i_leaving);
     print_tableau();
     return ProblemState::NotOptimum;
+}
+
+void SimplexTableau::from_phase1_to_phase2() {
+    /*//
+    / WARNING : HERE
+    / Because of redundants constraints
+    / A artificial variable may remain in basis
+    / So this next line could lead to serious failure
+    //*/
+    A = A.leftCols(n + m).eval();
+    c = real_cost;
+    for (int col = 0; col < n; ++col) {
+        int rowOfBasis = affectation[col];
+        if (rowOfBasis != -1) {
+            Rational coeff = -c(col);
+            c += coeff*A.row(rowOfBasis);
+            opt += coeff*b(rowOfBasis);
+        }
+    }
+    artificials = 0;
+    clear_cycling_detection();
 }
 
 void SimplexTableau::simplex_method(Phase phase) {
@@ -253,8 +366,7 @@ void SimplexTableau::simplex_method(Phase phase) {
         cout << "Phase 1\n";
     else
         cout << "Phase 2\n";
-    cout << verbose << endl;
-    if (verbose >= 2) {
+    if (verbose >= 3) {
         cout << "The initial tableau is:\n";
         print_tableau();
     }
@@ -271,53 +383,26 @@ void SimplexTableau::simplex_method(Phase phase) {
                     break ;
                 } else {
                     cout << "The problem is FEASIBLE !\n";
-                    /*//
-                    / WARNING : HERE
-                    / Because of redundants constraints
-                    / A artificial variable may remain in basis
-                    / So this next line could lead to serious failure
-                    //*/
-                    A = A.leftCols(n + m).eval();
-                    c = real_cost;
-                    for (int col = 0; col < n; ++col) {
-                        int rowOfBasis = affectation[col];
-                        if (rowOfBasis != -1) {
-                            Rational coeff = -c(col);
-                            c += coeff*A.row(rowOfBasis);
-                            opt += coeff*b(rowOfBasis);
-                        }
-                    }
+                    from_phase1_to_phase2();
                     simplex_method(Phase::Phase2);
                     return ;
                 }
             }
-            cout << "One optimal solution is: ";
-            for (int variable = 0; variable < n; ++variable) {
-                if (variable != 0)
-                    cout << ", ";
-                cout << "x_" << (variable+1) << " = ";
-                if (affectation[variable] != -1)
-                    cout << b(affectation[variable]);
-                else
-                    cout << "0";
-            }
-            cout << "\nThe value of the objective for this solution is: " << -opt << "\n";
+            print_solution();
             break ;
         }
         nbPivots += 1;
     }
-    cout << "The number of pivots is: " << nbPivots << "\n";
-    cout << "Pivot rule used: ";
-    switch (pivot) {
-        case PivotType::Bland:
-        cout << "Bland's rule\n";
-        break;
-        case PivotType::Steepest:
-        cout << "Steepest Edge rule\n";
-        break;
-        default:
-        cout << "Dantzig's rule\n";
-        break;
+    print_params();
+}
+
+void SimplexTableau::solve() {
+    if (artificials == 0) {
+        cout << "The problem is trivially feasible : no need for phase 1\n";
+        simplex_method(SimplexTableau::Phase::Phase2);
+    } else {
+        cout << "The problem may be unfeasible : let's apply phase 1 / phase 2 method !\n";
+        simplex_method(SimplexTableau::Phase::Phase1);
     }
 }
 
@@ -334,15 +419,17 @@ int main(int argc, char* argv[]) {
         ("help", "produce help message")
         ("input-file", po::value<string>(&name), "input_file")
         ("verbose", po::value<int>(&verboseLevel)->default_value(0),
-        "Set verbose :"
-        "0 : for only pivots (by default)\n"
-        "1 : for pivots and program\n"
-        "2 : for pivots program and tableau\n")
+        "Set verbose :\n"
+        "\t0 : for only pivots (by default)\n"
+        "\t1 : for pivots and optimal solution\n"
+        "\t2 : for pivots, optimal solution and program\n"
+        "\t3 : for pivots, optimal solution, program and tableau\n")
         ("pivot", po::value<string>(&pivotName)->default_value("maxcoeff"),
         "Set pivot type :\n"
-        "maxcoeff : for maxcoeff (by default)\n"
-        "steepest : for steepest edge rule\n"
-        "bland : for bland's rule\n")
+        "\tmaxcoeff : for maxcoeff, Dantzig's rule (by default)\n"
+        "\tsteepest : for steepest edge rule\n"
+        "\tbland : for Bland's rule\n")
+        ("no-cycles", "auto-detect cycles and leave them by Bland's rule")
     ;
 
     po::positional_options_description p;
@@ -350,8 +437,6 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
     po::notify(vm);
-
-    cout << verboseLevel << endl;
 
     if (vm.count("help")) {
         cout << desc << "\n";
@@ -367,17 +452,15 @@ int main(int argc, char* argv[]) {
         pivot = SimplexTableau::PivotType::MaxCoeff;
     else
         throw runtime_error("Unknown pivot option\n");
-    if (verboseLevel < 0 || verboseLevel > 2)
+    if (verboseLevel < 0 || verboseLevel > 3)
         throw runtime_error("Unknown verbose level\n");
 
-    SimplexTableau tableau(verboseLevel, pivot);
+    SimplexTableau tableau(verboseLevel, pivot, vm.count("no-cycles"));
     tableau.read_from_file(name);
-    if (tableau.artificials == 0) {
-        cout << "The problem is trivially feasible : no need for phase 1\n";
-        tableau.simplex_method(SimplexTableau::Phase::Phase2);
-    } else {
-        cout << "The problem may be unfeasible : let's apply phase 1 / phase 2 method !\n";
-        tableau.simplex_method(SimplexTableau::Phase::Phase1);
-    }
+    auto start = chrono::steady_clock::now();
+    tableau.solve();
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+    cout << "Overall computation time : " << chrono::duration <double> (diff).count() << "ms" << endl;
     return EXIT_SUCCESS;
 }

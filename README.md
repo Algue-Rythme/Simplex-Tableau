@@ -44,11 +44,11 @@ How detect a cycle ? There is many ways !
 
 1. Simplest way (implemented) : there is cycling only if (necessary condition) the improvement (delta) is null.
 In this case, we store the list of variables that enters or left the basis, in the order.
-This is a word on a alphabet where the symbols are the (x_i, x_j).
-If the word is w=uvv we just detect a cycle of size |v| where v is the cycle !
-u is just the prefix, because we can make several steps with delta=0 without being in a cycle.
-Check this is in O(|w|^2) in worst case (we make an iteration on the all possible |v| such that |v| <= |w|/2).
-But, in average, it's O(|w|) because it's really unlikely that each test of a given |v| takes O(|v|).
+This is a word on a alphabet where the symbols are the `(x_i, x_j)`.
+If the word is `w=uvv` we just detect a cycle of size `|v|` where `v` is the cycle !
+u is just the prefix, because we can make several steps with `delta=0` without being in a cycle.
+Check this is in `O(|w|^2)` in worst case (we make an iteration on the all possible `|v|` such that `|v| <= |w|/2)`.
+But, in average, it's `O(|w|)` because it's really unlikely that each test of a given `|v|` takes `O(|v|)`.
 Avantages and inconvenients :
     + easy to code
     + very fast for small cycles
@@ -58,8 +58,8 @@ In worst case the cycle may be exponential in n, because the number of different
 
 2. Better way (no implemented). I suggest to use the Floyd's Tortoise and Hare.
 Hare makes two iteration of simplex at each step. Tortoise only one.
-I can update both basis in O(1) (easy). With this, I update a error counter in O(1).
-When error counter reaches 0 (in O(1)), the basis are identical. And we successfully detect a cycle !
+I can update both basis in `O(1)` (easy). With this, I update a error counter in `O(1)`.
+When error counter reaches 0 (in `O(1)`), the basis are identical. And we successfully detect a cycle !
 Avantages and inconvenients :
     + Worst case : factor two of memory or computation time, (because of the second simplex we solve in parallel). That is asymptotically identical.
     + Hard to code.
@@ -79,8 +79,8 @@ Unfortunately I don't provide any solution reference for these inputs. But my pr
 I made many big files to test speed of my program. Speed is measured and printed on standard output.
 It's HIGHLY recommended to set verbose=0 or 1 on big instances.
 
-When m*n <= 10*1000 the average computation time is pretty slow (less than one second).
-But when mn >= 1000*1000 we can observe many behaviors.
+When mn <= 10 000 the average computation time is pretty slow (less than one second).
+But when mn >= 1 000 000 we can observe many behaviors.
 
 First, depending of if m or n is the biggest we don't have the same results, depending of the pivot rule used.
 Big number of variables seems to lead us to the worst case.

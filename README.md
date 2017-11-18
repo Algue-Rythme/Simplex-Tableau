@@ -130,5 +130,5 @@ inconsistent results, and maybe a segfault.
 
 I could solve it by one of the following to solutions :
 
-+ Keep artificials variables during phase 2. It's ugly and lead to bad performances, but easy to code.  
-+ Replace artificials variable in basis by other variables (we know that a such variable exists) because we're on a degenerate solution. It's the best solution but I didn't implemented it.
++ Keep artificial variables during phase 2. It's ugly and lead to bad performances, but easy to code.  
++ Replace artificial variables in basis by other variables (we know that a such variable exists) because we're on a degenerate solution. It's the best solution but I didn't implemented it.

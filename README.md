@@ -79,8 +79,8 @@ Unfortunately I don't provide any solution reference for these inputs. But my pr
 I made many big files to test speed of my program. Speed is measured and printed on standard output.
 It's HIGHLY recommended to set verbose=0 or 1 on big instances.
 
-When mn <= 10 000 the average computation time is pretty slow (less than one second).
-But when mn >= 1 000 000 we can observe many behaviors.
+When `mn <= 10 000` the average computation time is pretty slow (less than one second).
+But when `mn >= 1 000 000` we can observe many behaviors.
 
 First, depending of if m or n is the biggest we don't have the same results, depending of the pivot rule used.
 Big number of variables seems to lead us to the worst case.

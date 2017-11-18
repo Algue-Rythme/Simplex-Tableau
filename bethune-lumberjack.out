@@ -1,0 +1,39 @@
+OUTPUT
+The input linear program is:
+
+Maximise  50x_1 + 120x_2
+Such that 1x_1 <= 100
+          1x_2 <= 100
+          1x_1 + 1x_2 <= 100
+          10x_1 + 50x_2 <= 4000
+          x_1, x_2 are non-negative
+The problem is trivially feasible : no need for phase 1
+Phase 2
+The initial tableau is:
+  50  120    0    0    0    0    0
+   1    0    1    0    0    0  100
+   0    1    0    1    0    0  100
+   1    1    0    0    1    0  100
+  10   50    0    0    0    1 4000
+Current optimum : 0
+Entering x_2
+Leaving x_6
+   26     0     0     0     0 -12/5 -9600
+    1     0     1     0     0     0   100
+ -1/5     0     0     1     0 -1/50    20
+  4/5     0     0     0     1 -1/50    20
+  1/5     1     0     0     0  1/50    80
+Current optimum : 9600
+Entering x_1
+Leaving x_5
+     0      0      0      0  -65/2   -7/4 -10250
+     0      0      1      0   -5/4   1/40     75
+     0      0      0      1    1/4  -1/40     25
+     1      0      0      0    5/4  -1/40     25
+     0      1      0      0   -1/4   1/40     75
+Current optimum : 10250
+One optimal solution is: x_1 = 25, x_2 = 75
+The value of the objective for this solution is: 10250
+The number of pivots is: 2
+Pivot rule used: Dantzig's rule with no-cycles option
+Overall computation time : 0.00121624ms

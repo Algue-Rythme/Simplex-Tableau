@@ -89,23 +89,23 @@ bethune-test_gentest_n_m are dense test cases with very few zeros, and positive 
 bethune-test_sparse_n_m is corresponding to set cases with many zeros, and positive coefficients.
 bethune-test_negpos_n_m is also corresponding to set cases with many zeros, but I authorize negative numbers to test Phase 1/Phase 2.
 
-bethune-test_gentest_1000_1000 =>
-- 1000 variables 1000 constraints but null optimal solution,
-- only 4 pivots with maxcoeff, ~8.2s on my computer
-- 7 pivots with steepest, ~13.3s
+bethune-test_gentest_1000_1000 =>  
+- 1000 variables 1000 constraints but null optimal solution,  
+- only 4 pivots with maxcoeff, ~8.2s on my computer  
+- 7 pivots with steepest, ~13.3s  
 
-bethune-test_sparse_100_10000 =>
-- 100 variables 10 000 constraints,
-- 4 pivots with maxcoeff, ~3.57s
-- 4 pivots with steepest edge, ~3.54s
+bethune-test_sparse_100_10000 =>  
+- 100 variables 10 000 constraints,  
+- 4 pivots with maxcoeff, ~3.57s  
+- 4 pivots with steepest edge, ~3.54s  
 
 On big size instances, we can conclude steepest edge is not slower (in average) per iteration.
 
 Big size instances are hard to characterize :
 
-bethune-test_negpos_100_1000 => unfeasible, 1 pivot, less than ~1s
-bethune-test_negpos_1000_100 => unbounded, 2 pivots (bland) 3 pivots (with maxcoeff or steepest) and ~0.33s
-bethune-test_negpos_1000_1000 => too many pivots steps no results found in reasonable time
+bethune-test_negpos_100_1000 => unfeasible, 1 pivot, less than ~1s  
+bethune-test_negpos_1000_100 => unbounded, 2 pivots (bland) 3 pivots (with maxcoeff or steepest) and ~0.33s  
+bethune-test_negpos_1000_1000 => too many pivots steps no results found in reasonable time  
 
 On very big sparse positive instances :
 

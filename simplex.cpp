@@ -192,7 +192,7 @@ void SimplexTableau::print_tableau() const {
 }
 
 void SimplexTableau::print_solution() const {
-    if (verbose >= 1) {
+    if (verbose >= 0) {
         cout << "One optimal solution is: ";
         for (int variable = 0; variable < n; ++variable) {
             if (variable != 0)
@@ -329,11 +329,13 @@ SimplexTableau::ProblemState SimplexTableau::simplex_iteration() {
         i_entering = pivot_entering_DantzigRule();
         break;
     }
-    cout << "Entering x_" << (i_entering+1) << endl;
+    if (verbose >= 2)
+        cout << "Entering x_" << (i_entering+1) << endl;
     VectorXr::Index i_leaving = pivot_leaving_Bland(A.col(i_entering));
     if (i_leaving == -1)
         return ProblemState::Unbounded;
-    cout << "Leaving x_" << (basis[i_leaving]+1) << endl;
+    if (verbose >= 2)
+        cout << "Leaving x_" << (basis[i_leaving]+1) << endl;
     do_pivot(i_entering, i_leaving);
     updateBasis(i_entering, i_leaving);
     print_tableau();
@@ -371,7 +373,8 @@ void SimplexTableau::simplex_method(Phase phase) {
         print_tableau();
     }
     while (true) {
-        cout << "Current optimum : " << -opt << "\n";
+        if (verbose >= 2)
+            cout << "Current optimum : " << -opt << "\n";
         ProblemState problem = simplex_iteration();
         if (problem == ProblemState::Unbounded) {
             cout << "The problem is UNBOUNDED !\n";

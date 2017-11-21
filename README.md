@@ -4,27 +4,27 @@ Implementation of Simplex Tableau algorithm, for the Approximation and Optimisat
 
 ## Usage
 
-All the options can be displayed using "./bethune-exec --help".
-The usage of .bethune-exec is the following :
-
+All the options can be displayed using "./bethune-exec --help".  
+The usage of .bethune-exec is the following :  
+  
 ```
 ./bethune-exec --verbose 3 --pivot steepest --no-cycles bethune-test_devotail.txt
 ```
 
-will use steepest edge rule (modified by cycle elimination) and print everything (verbose 3).
-Defaults values are also provided for options, such as maxCoeff or verbose=0.
+will use steepest edge rule (modified by cycle elimination) and print everything (verbose 3).  
+Defaults values are also provided for options, such as maxCoeff or verbose=0.  
 
-The executable was compiled for Ubuntu 16 on x86-64 bits system, with g++ 5.4.0
+The executable was compiled for Ubuntu 16 on x86-64 bits system, with g++ 5.4.0  
 
 ## Language and librairies
 
-The program was written in C++14 (fully standard compliant) in the file simplex.cpp.
-generate_tests.cpp is just an utility to creates big files of tests.
+The program was written in C++14 (fully standard compliant) in the file simplex.cpp.  
+generate_tests.cpp is just an utility to creates big files of tests.  
 
-I used Boost for command line parsing. It requires libboost-all-dev being installed.
-I also used Boost to get the mpq_rational from libgmp, the GNU Multiple PrecisionArithmetic Library.
-Boost provides overloaded operators for this purpose : libGMP need to be present on the computer.
-Finally, I used Eigen, a c++ header-only library of linear algebra, to work with matrix or arrays like in Numpy.
+I used Boost for command line parsing. It requires libboost-all-dev being installed.  
+I also used Boost to get the mpq_rational from libgmp, the GNU Multiple PrecisionArithmetic Library.  
+Boost provides overloaded operators for this purpose : libGMP need to be present on the computer.  
+Finally, I used Eigen, a c++ header-only library of linear algebra, to work with matrix or arrays like in Numpy.  
 
 I provided a Makefile to compile the code, assuming dependencies are on the computer.
 
@@ -42,14 +42,14 @@ When we are sure that we are not in cycle anymore (i.e when the optimum improvem
 
 How detect a cycle ? There is many ways !
 
-1. Simplest way (implemented) : there is cycling only if (necessary condition) the improvement (delta) is null.
-In this case, we store the list of variables that enters or left the basis, in the order.
-This is a word on a alphabet where the symbols are the `(x_i, x_j)`.
-If the word is `w=uvv` we just detect a cycle of size `|v|` where `v` is the cycle !
-u is just the prefix, because we can make several steps with `delta=0` without being in a cycle.
-Check this is in `O(|w|^2)` in worst case (we make an iteration on the all possible `|v|` such that `|v| <= |w|/2)`.
-But, in average, it's `O(|w|)` because it's really unlikely that each test of a given `|v|` takes `O(|v|)`.
-Avantages and inconvenients :
+1. Simplest way (implemented) : there is cycling only if (necessary condition) the improvement `delta` is null.  
+In this case, we store the list of variables that enters or left the basis, in the order.  
+This is a word on a alphabet where the symbols are the `(x_i, x_j)`.  
+If the word is `w=uvv` we just detect a cycle of size `|v|` where `v` is the cycle !  
+`u` is just the prefix, because we can make several steps with `delta=0` without being in a cycle.  
+Check this is in `O(|w|^2)` in worst case (we make an iteration on the all possible `|v|` such that `|v| <= |w|/2)`.  
+But, in average, it's `O(|w|)` because it's really unlikely that each test of a given `|v|` takes `O(|v|)`.  
+Avantages and inconvenients :  
     + easy to code
     + very fast for small cycles
     + may be recquire a lot of memory and computation time when cycle becomes too long.
@@ -71,23 +71,23 @@ I didn't implement this one.
 
 Of course I used the exemples of the homeworks, but also my ones.
 
-Several exemples are from a book on linear programming written by Vanderbei.
-The first number is the n° of the page, and the second one the n° of the exercise.
-Ex: test_vanderbei_24_22 can be found in page 24 as the 2.2 exemple.
-Unfortunately I don't provide any solution reference for these inputs. But my program should work on them.
+Several exemples are from a book on linear programming written by Vanderbei.  
+The first number is the n° of the page, and the second one the n° of the exercise.  
+Ex: test_vanderbei_24_22 can be found in page 24 as the 2.2 exemple.  
+Unfortunately I don't provide any solution reference for these inputs. But my program should work on them.  
 
-I made many big files to test speed of my program. Speed is measured and printed on standard output.
-It's HIGHLY recommended to set verbose=0 or 1 on big instances.
+I made many big files to test speed of my program. Speed is measured and printed on standard output.  
+It's HIGHLY recommended to set verbose=0 or 1 on big instances.  
 
-When `mn <= 10 000` the average computation time is pretty slow (less than one second).
-But when `mn >= 1 000 000` we can observe many behaviors.
+When `mn <= 10 000` the average computation time is pretty slow (less than one second).  
+But when `mn >= 1 000 000` we can observe many behaviors.  
 
-First, depending of if m or n is the biggest we don't have the same results, depending of the pivot rule used.
-Big number of variables seems to lead us to the worst case.
+First, depending of if m or n is the biggest we don't have the same results, depending of the pivot rule used.  
+Big number of variables seems to lead us to the worst case.  
 
-bethune-test_gentest_n_m are dense test cases with very few zeros, and positive coefficients.
-bethune-test_sparse_n_m is corresponding to set cases with many zeros, and positive coefficients.
-bethune-test_negpos_n_m is also corresponding to set cases with many zeros, but I authorize negative numbers to test Phase 1/Phase 2.
+bethune-test_gentest_n_m are dense test cases with very few zeros, and positive coefficients.  
+bethune-test_sparse_n_m is corresponding to set cases with many zeros, and positive coefficients.  
+bethune-test_negpos_n_m is also corresponding to set cases with many zeros, but I authorize negative numbers to test Phase 1/Phase 2.  
 
 bethune-test_gentest_1000_1000 =>  
 - 1000 variables 1000 constraints but null optimal solution,  
@@ -118,7 +118,11 @@ bethune-test_sparse_10000_100 =>
 - 202 pivot steps with maxcoeff, 174.2s
 - 20 pivot steps with bland, 17.3s
 - cycle with steepest, to the end of the time
-- 115 pivot steps with steepest and no-cycles option, 99.2s
+- 115 pivot steps with steepest and no-cycles option, 99.2s  
+  
+The most interesting instances are the Klint Minty cube of dimension D.  
+With this exemple, macoeff takes 2^D pivots, but steepest edge takes only one.  
+For D=20 and maxcoeff ~40mn will be necessary to get the output.  
 
 ## Bugs
 
@@ -128,7 +132,5 @@ But artificial variables may remains in basis (despite a null-optimum) because t
 In this case the algorithm may fails because the basis looses a variable. I don't know what happen in this case, but I expect at least
 inconsistent results, and maybe a segfault.  
 
-I could solve it by one of the following to solutions :
-
-+ Keep artificial variables during phase 2. It's ugly and lead to bad performances, but easy to code.  
-+ Replace artificial variables in basis by other variables (we know that a such variable exists) because we're on a degenerate solution. It's the best solution but I didn't implemented it.
+I could solve it by one of replacing artificial variables in basis by other variables (we know that a such variable exists) because we're on a degenerate solution.  
+It's the best solution but I didn't implemented it.

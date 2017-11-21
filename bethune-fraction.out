@@ -1,46 +1,40 @@
 OUTPUT
 The input linear program is:
 
-Maximise  5x_1 + 4/9x_2 + -3x_3
-Such that 2x_1 + 3x_2 + 1x_3 <= 5
-          4x_1 + 1x_2 + -2/3x_3 <= 11
-          3x_1 + 4x_2 + 2x_3 <= 91
-          1x_1 + 1x_2 <= 2
-          -1x_2 + -1x_3 <= -6/7
-          -1x_1 + -1x_2 <= -34
-          x_1, x_2, x_3 are non-negative
+Maximise  3x_1 + 2x_2 + 3x_3 + 1x_4
+Such that 1x_1 + 3x_2 + 1x_3 + 4x_4 <= 1
+          -1x_1 + -3x_2 + -1x_3 + -4x_4 <= -1
+          -10x_1 + 5x_2 + 1x_3 + 6x_4 <= 0
+          1x_2 + 2x_3 + 1x_4 <= 0
+          x_1, x_2, x_3, x_4 are non-negative
 The problem may be unfeasible : let's apply phase 1 / phase 2 method !
 Phase 1
 The initial tableau is:
-    1     2     1     0     0     0     0    -1    -1     0     0 244/7
-    2     3     1     1     0     0     0     0     0     0     0     5
-    4     1  -2/3     0     1     0     0     0     0     0     0    11
-    3     4     2     0     0     1     0     0     0     0     0    91
-    1     1     0     0     0     0     1     0     0     0     0     2
-    0     1     1     0     0     0     0    -1     0     1     0   6/7
-    1     1     0     0     0     0     0     0    -1     0     1    34
-Current optimum : -244/7
-Entering x_2
-Leaving x_10
-    1     0    -1     0     0     0     0     1    -1    -2     0 232/7
-    2     0    -2     1     0     0     0     3     0    -3     0  17/7
-    4     0  -5/3     0     1     0     0     1     0    -1     0  71/7
-    3     0    -2     0     0     1     0     4     0    -4     0 613/7
-    1     0    -1     0     0     0     1     1     0    -1     0   8/7
-    0     1     1     0     0     0     0    -1     0     1     0   6/7
-    1     0    -1     0     0     0     0     1    -1    -1     1 232/7
-Current optimum : -232/7
+  1   3   1   4   0  -1   0   0   0   1
+  1   3   1   4   1   0   0   0   0   1
+  1   3   1   4   0  -1   0   0   1   1
+-10   5   1   6   0   0   1   0   0   0
+  0   1   2   1   0   0   0   1   0   0
+Current optimum : -1
 Entering x_1
-Leaving x_7
-    0     0     0     0     0     0    -1     0    -1    -1     0    32
-    0     0     0     1     0     0    -2     1     0    -1     0   1/7
-    0     0   7/3     0     1     0    -4    -3     0     3     0  39/7
-    0     0     1     0     0     1    -3     1     0    -1     0 589/7
-    1     0    -1     0     0     0     1     1     0    -1     0   8/7
-    0     1     1     0     0     0     0    -1     0     1     0   6/7
-    0     0     0     0     0     0    -1     0    -1     0     1    32
-Current optimum : -32
-The problem is UNFEASIBLE !
-The number of pivots is: 2
-Pivot rule used: Dantzig's rule with no-cycles option
-Overall computation time : 0.00267099ms
+Leaving x_5
+ 0  0  0  0 -1 -1  0  0  0  0
+ 1  3  1  4  1  0  0  0  0  1
+ 0  0  0  0 -1 -1  0  0  1  0
+ 0 35 11 46 10  0  1  0  0 10
+ 0  1  2  1  0  0  0  1  0  0
+Current optimum : 0
+The problem is FEASIBLE !
+Phase 2
+The initial tableau is:
+  0  -7   0 -11  -3   0   0   0  -3
+  1   3   1   4   1   0   0   0   1
+  0   0   0   0  -1  -1   0   0   0
+  0  35  11  46  10   0   1   0  10
+  0   1   2   1   0   0   0   1   0
+Current optimum : 3
+One optimal solution is: x_1 = 1, x_2 = 0, x_3 = 0, x_4 = 0
+The value of the objective for this solution is: 3
+The number of pivots is: 1
+Pivot rule used: Bland's rule 
+Overall computation time : 0.00153876ms

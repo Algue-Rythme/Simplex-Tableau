@@ -18,7 +18,7 @@ The executable was compiled for Ubuntu 16 on x86-64 bits system, with g++ 5.4.0
 
 ## Language and librairies
 
-The program was written in C++14 (fully standard compliant) in the file simplex.cpp.  
+The program was written in C++14 (fully standard compliant) in the file bethune-simplex.cpp.  
 generate_tests.cpp is just an utility to creates big files of tests.  
 
 I used Boost for command line parsing. It requires libboost-all-dev being installed.  

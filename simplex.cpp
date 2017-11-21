@@ -329,12 +329,12 @@ SimplexTableau::ProblemState SimplexTableau::simplex_iteration() {
         i_entering = pivot_entering_DantzigRule();
         break;
     }
-    if (verbose >= 2)
+    if (verbose >= 1)
         cout << "Entering x_" << (i_entering+1) << endl;
     VectorXr::Index i_leaving = pivot_leaving_Bland(A.col(i_entering));
     if (i_leaving == -1)
         return ProblemState::Unbounded;
-    if (verbose >= 2)
+    if (verbose >= 1)
         cout << "Leaving x_" << (basis[i_leaving]+1) << endl;
     do_pivot(i_entering, i_leaving);
     updateBasis(i_entering, i_leaving);
@@ -423,10 +423,10 @@ int main(int argc, char* argv[]) {
         ("input-file", po::value<string>(&name), "input_file")
         ("verbose", po::value<int>(&verboseLevel)->default_value(0),
         "Set verbose :\n"
-        "\t0 : for only pivots (by default)\n"
-        "\t1 : for pivots and optimal solution\n"
-        "\t2 : for pivots, optimal solution and program\n"
-        "\t3 : for pivots, optimal solution, program and tableau\n")
+        "\t0 : for optimum value and optimal solution (by default)\n"
+        "\t1 : for optimum value, optimal solution and pivots\n"
+        "\t2 : for optimum value, optimal solution, pivots and program\n"
+        "\t3 : for optimum value, optimal solution, pivots, program and tableau\n")
         ("pivot", po::value<string>(&pivotName)->default_value("maxcoeff"),
         "Set pivot type :\n"
         "\tmaxcoeff : for maxcoeff, Dantzig's rule (by default)\n"
